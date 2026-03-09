@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const ticketHelper = require('./utils/ticketHelper');
 const logger = require('./utils/logger');
+const ratingCommand = require('./commands/rating');
 
 const MODULE_CONFIG_PATH = path.join(__dirname, 'config.json');
 
@@ -73,11 +74,36 @@ module.exports = {
           } catch {}
           return true;
         }
+        if (id === 'ticketsystem:rating:open') {
+          if (typeof ratingCommand.handleComponent === 'function') {
+            const handled = await ratingCommand.handleComponent(interaction);
+            if (handled) return true;
+          }
+        }
       }
     } catch (err) {
       console.error('[ticketsystem] Fehler in handleComponent:', err);
       try {
         if (!interaction.replied) {
+          await interaction.reply({ content: 'Ein Fehler ist aufgetreten.', ephemeral: true });
+        }
+      } catch {}
+      return true;
+    }
+
+    return false;
+  },
+
+  handleModal: async function (interaction) {
+    try {
+      if (typeof ratingCommand.handleModal === 'function') {
+        const handled = await ratingCommand.handleModal(interaction);
+        if (handled) return true;
+      }
+    } catch (err) {
+      console.error('[ticketsystem] Fehler in handleModal:', err);
+      try {
+        if (!interaction.replied && !interaction.deferred) {
           await interaction.reply({ content: 'Ein Fehler ist aufgetreten.', ephemeral: true });
         }
       } catch {}
