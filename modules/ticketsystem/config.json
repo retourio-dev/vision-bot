@@ -1,0 +1,87 @@
+{
+  "ticketCategories": {
+    "general": {
+      "key": "general",
+      "name": "Allgemeiner Support",
+      "emoji": "📩",
+      "categoryId": "1404892277226209341",
+      "teamRoleId": "1403383195357020283",
+      "permissions": {
+        "allowedRoles": [
+          "1403382467594944624",
+          "1403383195357020283"
+        ],
+        "deniedRoles": []
+      }
+    },
+    "orders": {
+      "key": "orders",
+      "name": "Bestellungs Anliegen",
+      "emoji": "🛒",
+      "categoryId": "1404892426623258725",
+      "teamRoleId": "1403383193524240558",
+      "permissions": {
+        "allowedRoles": [
+          "1403382467594944624",
+          "1403383193524240558"
+        ],
+        "deniedRoles": []
+      }
+    },
+    "partner": {
+      "key": "partner",
+      "name": "Partner Anliegen",
+      "emoji": "🤝",
+      "categoryId": "1404892533787725917",
+      "teamRoleId": "1403383344988684299",
+      "permissions": {
+        "allowedRoles": [
+          "1403382467594944624",
+          "1403383344988684299"
+        ],
+        "deniedRoles": []
+      }
+    },
+    "application": {
+      "key": "application",
+      "name": "Bewerbung",
+      "emoji": "📋",
+      "categoryId": "1404892581145612299",
+      "teamRoleId": "1403384609005109285",
+      "permissions": {
+        "allowedRoles": [
+          "1403382467594944624",
+          "1403384609005109285"
+        ],
+        "deniedRoles": []
+      }
+    }
+  },
+  "ticketPanel": {
+    "channelId": "1403363857866686464",
+    "messageId": "1404899125161361499",
+    "title": "Support Tickets",
+    "description": "Wähle eine Kategorie um ein Ticket zu erstellen.\n\n> 📩 - **Allgemeiner Support**\n> 🛒 - **Bestellungsanliegen**\n> 🤝 - **Partneranliegen**\n> 📋 - **Bewerbung**",
+    "imageUrl": "https://i.ibb.co/BKSwTcdX/Tickets-1.png"
+  },
+  "ticketLogsChannel": "1402913489445585008",
+  "ticketClosedCategory": "1404893063834505336",
+  "messages": {
+    "ticketCreated": "Hallo {user}, dein Ticket wurde erstellt: {channel}",
+    "ticketClosed": "Dieses Ticket wurde geschlossen von {user}.",
+    "panelTitle": "Support Tickets",
+    "panelDescription": "Wähle eine Kategorie um ein Ticket zu erstellen.\n\n> 📩-Allgemeiner Support\n> 🛒-Bestellungsanliegen\n> 🤝-Partneranliegen\n> 📋-Bewerbung"
+  },
+  "botSettings": {
+    "commandAllowedRoles": [
+      "1403382467594944624",
+      "1403383195357020283",
+      "1403383193524240558",
+      "1403383344988684299",
+      "1403384609005109285"
+    ],
+    "ticketPrefix": "{key}",
+    "ticketChannelPrefix": "{key}-",
+    "ticketTopicTemplate": "ticketId:{id}|creator:{user}|category:{cat}|number:{number}"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "verifyChannelId": "1404932848103854131",
+  "verifiedRoleIds": [
+    "1403384380780580977",
+    "1402913488073920558"
+  ],
+  "unverifiedRoleId": "1404933716089765978",
+  "embed": {
+    "title": "Willkommen auf unserem Server!",
+    "description": "Bitte verifiziere dich, um Zugriff auf alle Channels zu bekommen.\n\nKlicke auf **Verifizieren**, um zu starten.",
+    "color": "#C3DEFF",
+    "image": "https://example.com/verify-banner.png"
+  },
+  "button": {
+    "label": "Verifizieren",
+    "style": "Success"
+  },
+  "mathChallenge": {
+    "min": 10,
+    "max": 99
+  },
+  "messages": {
+    "correct": "✅ Du wurdest erfolgreich verifiziert!",
+    "incorrect": "❌ Falsche Antwort! Bitte versuche es erneut."
+  },
+  "messageId": "1404935290375639040"
+}

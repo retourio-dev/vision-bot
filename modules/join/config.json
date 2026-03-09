@@ -1,0 +1,25 @@
+{
+  "channelId": "1402913489445585013",
+  "autoRoleId": "1404933716089765978",
+  "embed": {
+    "color": "#C3DEFF",
+    "fields": [
+      {
+        "channelId": "1402913489445585014",
+        "label": "Regeln"
+      },
+      {
+        "channelId": "1402913489906827265",
+        "label": "Lieferzeiten"
+      },
+      {
+        "channelId": "1403363857866686464",
+        "label": "Tickets"
+      }
+    ],
+    "image": "https://i.ibb.co/h1s3d8kL/WElcome.png",
+    "footer": {
+      "text": "VISION-BOTS · Beigetreten am {timestamp}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "my-discord-bot",
+  "version": "1.0.0",
+  "description": "Ein Discord Bot mit discord.js und sqlite3",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "npm install moment && npm install",
+    "start": "node index.js"
+  },
+  "author": "erz0w",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "moment": "^2.30.1",
+    "sqlite3": "^5.1.6"
+  }
+}

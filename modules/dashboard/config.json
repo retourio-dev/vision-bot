@@ -1,0 +1,40 @@
+{
+  "channelId": "1402913489906827265",
+  "messageId": "1405157658280984587",
+  "updateIntervalSec": 300,
+  "statusLevel": 1,
+  "allowedroles": [
+    "1405125338052165600"
+  ],
+  "labels": {
+    "title": "Lieferzeiten",
+    "currentStatus": "Aktueller Status",
+    "legend": "Legende",
+    "queue": "Warteliste",
+    "inProgress": "In Bearbeitung",
+    "fastLane": "Fast Lane",
+    "total": "Gesamt",
+    "nextUpdate": "Nächstes Update"
+  },
+  "icons": {
+    "bolt": "⚡",
+    "queue": "📥",
+    "inProgress": "⚙️",
+    "fastLane": "🚀",
+    "total": "📊",
+    "legend": {
+      "1": "🟢",
+      "2": "🟡",
+      "3": "🔵",
+      "4": "🔴"
+    }
+  },
+  "colors": {
+    "embed": "#c3deff"
+  },
+  "counts": {
+    "warteliste": 0,
+    "inBearbeitung": 0,
+    "fastLane": 0
+  }
+}

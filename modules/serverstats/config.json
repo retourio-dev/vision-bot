@@ -1,0 +1,10 @@
+{
+  "guildId": "1402913488073920552",
+  "channelNames": {
+    "header": "🪐 | VISION-BOTS",
+    "members": "👥 | Member: {count}",
+    "customers": "🛒 | Customer: {count}"
+  },
+  "customerRoleId": "1403381977834455080",
+  "updateInterval": 60000
+}

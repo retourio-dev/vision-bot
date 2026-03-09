@@ -1,0 +1,10 @@
+{
+  "waitingRoomChannelId": "1402913489906827270",
+  "notifyChannelId": "1404949036611539118",
+  "supportRoleId": "1402913488094888019",
+  "embed": {
+    "title": "⚫️ New Support Alert 🚨",
+    "description": "🔊 **{user}** ist dem **Warteraum** beigetreten!\n\n\n> 👥<@&{roleId}> – bitte Support übernehmen.\n\n",
+    "color": "#c3deff"
+  }
+}
