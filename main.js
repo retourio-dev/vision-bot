@@ -282,7 +282,7 @@ client.on('interactionCreate', async (interaction) => {
       return;
     }
 
-    if (interaction.isButton() || interaction.isSelectMenu()) {
+    if (interaction.isButton() || (typeof interaction.isStringSelectMenu === 'function' ? interaction.isStringSelectMenu() : interaction.isSelectMenu())) {
       await dispatchComponentInteraction(interaction);
       return;
     }
