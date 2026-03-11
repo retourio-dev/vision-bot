@@ -4,6 +4,7 @@
     "guildId": { "type": "string" },
     "channelNames": { "type": "object" },
     "customerRoleId": { "type": "string" },
-    "updateInterval": { "type": "number" }
+    "updateInterval": { "type": "number" },
+    "fullFetchIntervalMs": { "type": "number" }
   }
 }

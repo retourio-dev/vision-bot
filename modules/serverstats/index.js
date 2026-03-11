@@ -4,6 +4,8 @@ const localConfig = require("./config.json");
 let channelIds = {};
 let cachedCounts = { members: null, customers: null };
 let updateTimeout = null;
+let lastFullFetchAt = 0;
+let warnedMissingMembersIntent = false;
 
 module.exports = (client) => {
   const ensureChannels = async () => {
@@ -32,13 +34,30 @@ module.exports = (client) => {
   const updateChannels = async () => {
     try {
       const guild = await client.guilds.fetch(localConfig.guildId);
-      // Mitglieder-Cache aktualisieren, damit Rollen-Zählung konsistent ist
-      try { await guild.members.fetch(); } catch {}
+      const fullFetchIntervalMs = Number(localConfig.fullFetchIntervalMs || 10 * 60 * 1000);
+      const cacheLikelyIncomplete = guild.members.cache.size > 0 && guild.memberCount && guild.members.cache.size < guild.memberCount;
+      const shouldFullFetch = cacheLikelyIncomplete || !lastFullFetchAt || (Date.now() - lastFullFetchAt) > fullFetchIntervalMs;
+      if (shouldFullFetch) {
+        try {
+          await guild.members.fetch();
+          lastFullFetchAt = Date.now();
+        } catch (e) {
+          if (!warnedMissingMembersIntent) {
+            warnedMissingMembersIntent = true;
+            console.warn("[serverstats] Konnte nicht alle Members fetchen. Stelle sicher, dass 'Server Members Intent' im Dev-Portal aktiviert ist und der Bot GuildMembers Intent hat.", e?.message || e);
+          }
+        }
+      }
       const realMemberCount = guild.memberCount;
       const customerRoleId = localConfig.customerRoleId;
       let customerCount = 0;
       if (customerRoleId) {
-        customerCount = guild.members.cache.filter(m => m.roles.cache.has(customerRoleId)).size;
+        const role = guild.roles.cache.get(customerRoleId) || await guild.roles.fetch(customerRoleId).catch(() => null);
+        if (role) {
+          customerCount = role.members.size;
+        } else {
+          customerCount = guild.members.cache.filter(m => m.roles.cache.has(customerRoleId)).size;
+        }
       }
       const updates = {
         members: { name: localConfig.channelNames.members.replace("{count}", realMemberCount), count: realMemberCount },
