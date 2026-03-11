@@ -12,13 +12,18 @@ module.exports = (client) => {
       const baseName = localConfig.channelNames[key].split(":")[0];
       let channel = guild.channels.cache.find(c => c.name.startsWith(baseName));
       if (!channel) {
-        channel = await guild.channels.create({
-          name: localConfig.channelNames[key].replace("{count}", 0),
-          type: ChannelType.GuildVoice,
-          permissionOverwrites: [
-            { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.Connect] }
-          ]
-        });
+        try {
+          channel = await guild.channels.create({
+            name: localConfig.channelNames[key].replace("{count}", 0),
+            type: ChannelType.GuildVoice,
+            permissionOverwrites: [
+              { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.Connect] }
+            ]
+          });
+        } catch (e) {
+          console.error("[serverstats] Konnte Channel nicht erstellen (fehlende Rechte?):", e?.message || e);
+          continue;
+        }
       }
       channelIds[key] = channel.id;
     }
@@ -27,9 +32,14 @@ module.exports = (client) => {
   const updateChannels = async () => {
     try {
       const guild = await client.guilds.fetch(localConfig.guildId);
+      // Mitglieder-Cache aktualisieren, damit Rollen-Zählung konsistent ist
+      try { await guild.members.fetch(); } catch {}
       const realMemberCount = guild.memberCount;
-      const customerRole = guild.roles.cache.get(localConfig.customerRoleId);
-      const customerCount = customerRole ? customerRole.members.size : 0;
+      const customerRoleId = localConfig.customerRoleId;
+      let customerCount = 0;
+      if (customerRoleId) {
+        customerCount = guild.members.cache.filter(m => m.roles.cache.has(customerRoleId)).size;
+      }
       const updates = {
         members: { name: localConfig.channelNames.members.replace("{count}", realMemberCount), count: realMemberCount },
         customers: { name: localConfig.channelNames.customers.replace("{count}", customerCount), count: customerCount },
@@ -57,9 +67,13 @@ module.exports = (client) => {
   };
 
   client.once(Events.ClientReady, async () => {
-    await ensureChannels();
-    await updateChannels();
-    setInterval(updateChannels, localConfig.updateInterval || 60000);
+    try {
+      await ensureChannels();
+      await updateChannels();
+      setInterval(updateChannels, localConfig.updateInterval || 60000);
+    } catch (e) {
+      console.error("[serverstats] Fehler beim Initialisieren:", e);
+    }
   });
 
   client.on(Events.GuildMemberAdd, m => {
@@ -73,5 +87,15 @@ module.exports = (client) => {
   });
   client.on(Events.GuildBanRemove, b => {
     if (b.guild.id === localConfig.guildId) scheduleUpdate();
+  });
+  client.on(Events.GuildMemberUpdate, (oldM, newM) => {
+    try {
+      if (newM.guild?.id !== localConfig.guildId) return;
+      const roleId = localConfig.customerRoleId;
+      if (!roleId) return;
+      const had = oldM?.roles?.cache?.has?.(roleId) || false;
+      const has = newM?.roles?.cache?.has?.(roleId) || false;
+      if (had !== has) scheduleUpdate();
+    } catch {}
   });
 };
