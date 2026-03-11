@@ -3,13 +3,27 @@
   "channelNames": {
     "header": "🪐 | VISION-BOTS",
     "members": "👥 | Member: {count}",
-    "customers": "🛒 | Customer: {count}"
+    "customers": "🛒 | Customer: {count}",
+    "premium": "💎 | Premium: {count}"
   },
   "customerRoleId": "1403381977834455080",
+  "premiumRoleId": "1403382106565902397",
   "roleCounters": {
-    "customers": [
-      "1403381977834455080"
-    ]
+    "customers": {
+      "include": [
+        "1403381977834455080"
+      ],
+      "exclude": [
+        "1403382106565902397"
+      ],
+      "mode": "any"
+    },
+    "premium": {
+      "include": [
+        "1403382106565902397"
+      ],
+      "mode": "any"
+    }
   },
   "updateInterval": 60000
 }

@@ -11,24 +11,63 @@ module.exports = (client) => {
   const getRoleCountersConfig = () => {
     const cfg = localConfig || {};
     if (cfg.roleCounters && typeof cfg.roleCounters === 'object') return cfg.roleCounters;
-    if (cfg.customerRoleId) return { customers: [String(cfg.customerRoleId)] };
+    const counters = {};
+    if (cfg.customerRoleId) counters.customers = [String(cfg.customerRoleId)];
+    if (cfg.premiumRoleId) counters.premium = [String(cfg.premiumRoleId)];
+    if (Object.keys(counters).length) return counters;
     return {};
   };
 
-  const countMembersWithAnyRole = (guild, roleIds) => {
-    const ids = (Array.isArray(roleIds) ? roleIds : [roleIds]).filter(Boolean).map(String);
-    if (ids.length === 0) return 0;
-    const set = new Set(ids);
+  const normalizeRoleCounter = (counter) => {
+    if (Array.isArray(counter)) return { include: counter.map(String), exclude: [], mode: 'any' };
+    if (counter && typeof counter === 'object') {
+      const include = Array.isArray(counter.include) ? counter.include.map(String) : [];
+      const exclude = Array.isArray(counter.exclude) ? counter.exclude.map(String) : [];
+      const mode = counter.mode === 'all' ? 'all' : 'any';
+      return { include, exclude, mode };
+    }
+    return { include: [], exclude: [], mode: 'any' };
+  };
+
+  const hasAnyRole = (member, roleIds) => {
+    for (const id of roleIds) {
+      if (member.roles.cache.has(id)) return true;
+    }
+    return false;
+  };
+
+  const hasAllRoles = (member, roleIds) => {
+    for (const id of roleIds) {
+      if (!member.roles.cache.has(id)) return false;
+    }
+    return true;
+  };
+
+  const countMembersByCounter = (guild, counter) => {
+    const { include, exclude, mode } = normalizeRoleCounter(counter);
+    if (!include.length) return 0;
     let count = 0;
     for (const member of guild.members.cache.values()) {
-      for (const roleId of set) {
-        if (member.roles.cache.has(roleId)) {
-          count++;
-          break;
-        }
-      }
+      const included = mode === 'all' ? hasAllRoles(member, include) : hasAnyRole(member, include);
+      if (!included) continue;
+      if (exclude.length && hasAnyRole(member, exclude)) continue;
+      count++;
     }
     return count;
+  };
+
+  const getWatchedRoleIds = () => {
+    const cfg = localConfig || {};
+    const roleCounters = getRoleCountersConfig();
+    const ids = new Set();
+    if (cfg.customerRoleId) ids.add(String(cfg.customerRoleId));
+    if (cfg.premiumRoleId) ids.add(String(cfg.premiumRoleId));
+    for (const counter of Object.values(roleCounters)) {
+      const n = normalizeRoleCounter(counter);
+      for (const id of n.include) ids.add(String(id));
+      for (const id of n.exclude) ids.add(String(id));
+    }
+    return ids;
   };
 
   const ensureChannels = async () => {
@@ -80,7 +119,7 @@ module.exports = (client) => {
       for (const [key, roleIds] of Object.entries(roleCounters)) {
         const template = localConfig.channelNames?.[key];
         if (!template) continue;
-        const count = countMembersWithAnyRole(guild, roleIds);
+        const count = countMembersByCounter(guild, roleIds);
         updates[key] = { name: template.replace("{count}", count), count };
       }
       for (const key in updates) {
@@ -130,11 +169,16 @@ module.exports = (client) => {
   client.on(Events.GuildMemberUpdate, (oldM, newM) => {
     try {
       if (newM.guild?.id !== localConfig.guildId) return;
-      const roleId = localConfig.customerRoleId;
-      if (!roleId) return;
-      const had = oldM?.roles?.cache?.has?.(roleId) || false;
-      const has = newM?.roles?.cache?.has?.(roleId) || false;
-      if (had !== has) scheduleUpdate();
+      const watched = getWatchedRoleIds();
+      if (!watched.size) return;
+      for (const roleId of watched) {
+        const had = oldM?.roles?.cache?.has?.(roleId) || false;
+        const has = newM?.roles?.cache?.has?.(roleId) || false;
+        if (had !== has) {
+          scheduleUpdate();
+          break;
+        }
+      }
     } catch {}
   });
 };
