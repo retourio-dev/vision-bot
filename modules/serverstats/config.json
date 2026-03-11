@@ -6,5 +6,10 @@
     "customers": "🛒 | Customer: {count}"
   },
   "customerRoleId": "1403381977834455080",
+  "roleCounters": {
+    "customers": [
+      "1403381977834455080"
+    ]
+  },
   "updateInterval": 60000
 }

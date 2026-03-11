@@ -8,6 +8,29 @@ let lastFullFetchAt = 0;
 let warnedMissingMembersIntent = false;
 
 module.exports = (client) => {
+  const getRoleCountersConfig = () => {
+    const cfg = localConfig || {};
+    if (cfg.roleCounters && typeof cfg.roleCounters === 'object') return cfg.roleCounters;
+    if (cfg.customerRoleId) return { customers: [String(cfg.customerRoleId)] };
+    return {};
+  };
+
+  const countMembersWithAnyRole = (guild, roleIds) => {
+    const ids = (Array.isArray(roleIds) ? roleIds : [roleIds]).filter(Boolean).map(String);
+    if (ids.length === 0) return 0;
+    const set = new Set(ids);
+    let count = 0;
+    for (const member of guild.members.cache.values()) {
+      for (const roleId of set) {
+        if (member.roles.cache.has(roleId)) {
+          count++;
+          break;
+        }
+      }
+    }
+    return count;
+  };
+
   const ensureChannels = async () => {
     const guild = await client.guilds.fetch(localConfig.guildId);
     for (const key in localConfig.channelNames) {
@@ -49,21 +72,17 @@ module.exports = (client) => {
         }
       }
       const realMemberCount = guild.memberCount;
-      const customerRoleId = localConfig.customerRoleId;
-      let customerCount = 0;
-      if (customerRoleId) {
-        const role = guild.roles.cache.get(customerRoleId) || await guild.roles.fetch(customerRoleId).catch(() => null);
-        if (role) {
-          customerCount = role.members.size;
-        } else {
-          customerCount = guild.members.cache.filter(m => m.roles.cache.has(customerRoleId)).size;
-        }
+      const roleCounters = getRoleCountersConfig();
+      const updates = {};
+      updates.header = { name: localConfig.channelNames.header };
+      updates.members = { name: localConfig.channelNames.members.replace("{count}", realMemberCount), count: realMemberCount };
+
+      for (const [key, roleIds] of Object.entries(roleCounters)) {
+        const template = localConfig.channelNames?.[key];
+        if (!template) continue;
+        const count = countMembersWithAnyRole(guild, roleIds);
+        updates[key] = { name: template.replace("{count}", count), count };
       }
-      const updates = {
-        members: { name: localConfig.channelNames.members.replace("{count}", realMemberCount), count: realMemberCount },
-        customers: { name: localConfig.channelNames.customers.replace("{count}", customerCount), count: customerCount },
-        header: { name: localConfig.channelNames.header }
-      };
       for (const key in updates) {
         const channel = guild.channels.cache.get(channelIds[key]);
         const newName = updates[key].name;
@@ -76,6 +95,7 @@ module.exports = (client) => {
       console.error("[serverstats] Update-Fehler:", e);
     }
   };
+
 
   const scheduleUpdate = () => {
     if (updateTimeout) return;
