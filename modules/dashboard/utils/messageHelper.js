@@ -8,24 +8,33 @@ function buildDashboardEmbed(cfg, nextUpdateTs) {
   const total = queue + inProgress + fastLane;
 
   const statusEmoji = cfg.icons?.legend?.[cfg.statusLevel] || '';
+  const etaByStatus = cfg.etaByStatus || {
+    "1": "0–24h",
+    "2": "1–2 Tage",
+    "3": "2–4 Tage",
+    "4": "4+ Tage"
+  };
+  const etaText = cfg.etaText || etaByStatus?.[String(cfg.statusLevel)] || "—";
+  const deliveryLabel = cfg.labels?.deliveryTime || "Durchschnittliche Lieferzeit";
+  const lastUpdateLabel = cfg.labels?.lastUpdate || "Letzte Aktualisierung";
+
+  const legendLine = cfg.icons?.legend
+    ? Object.entries(cfg.icons.legend).map(([level, icon]) => `${icon} ${level}`).join(' • ')
+    : '';
 
   return new EmbedBuilder()
     .setTitle(cfg.labels.title)
     .setColor(cfg.colors.embed || '#c3deff')
     .addFields(
       { name: cfg.labels.currentStatus, value: `${statusEmoji}`, inline: true },
+      { name: deliveryLabel, value: `⏱️ ${etaText}`, inline: true },
+      { name: lastUpdateLabel, value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
       { name: cfg.labels.queue, value: `${cfg.icons.queue} ${queue}`, inline: true },
       { name: cfg.labels.inProgress, value: `${cfg.icons.inProgress} ${inProgress}`, inline: true },
       { name: cfg.labels.fastLane, value: `${cfg.icons.fastLane} ${fastLane}`, inline: true },
       { name: cfg.labels.total, value: `${cfg.icons.total} ${total}`, inline: true },
-      {
-        name: cfg.labels.legend,
-        value: Object.entries(cfg.icons.legend)
-          .map(([level, icon]) => `${icon} Status ${level}`)
-          .join('\n'),
-        inline: false
-      },
-      { name: cfg.labels.nextUpdate, value: `<t:${nextUpdateTs}:R>`, inline: false }
+      { name: cfg.labels.legend, value: legendLine, inline: false },
+      { name: cfg.labels.nextUpdate, value: `<t:${nextUpdateTs}:R>`, inline: true }
     );
 }
 
