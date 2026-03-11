@@ -1,5 +1,21 @@
+const fs = require("fs");
+const path = require("path");
 const { Events, ChannelType, PermissionFlagsBits } = require("discord.js");
-const localConfig = require("./config.json");
+
+const CONFIG_PATH = path.join(__dirname, "config.json");
+const LOCAL_CONFIG_PATH = path.join(__dirname, "config.local.json");
+
+function loadConfig() {
+  const p = fs.existsSync(LOCAL_CONFIG_PATH) ? LOCAL_CONFIG_PATH : CONFIG_PATH;
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch (e) {
+    console.error("[serverstats] Konnte Config nicht laden:", e?.message || e);
+    return {};
+  }
+}
+
+const localConfig = loadConfig();
 
 let channelIds = {};
 let cachedCounts = { members: null, customers: null };

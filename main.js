@@ -72,7 +72,8 @@ function loadModules() {
     if (manifest?.configSchema) {
       const schemaPath = path.resolve(moduleDir, manifest.configSchema);
       if (fs.existsSync(schemaPath)) {
-        const cfgPath = path.join(moduleDir, 'config.json');
+        const localCfgPath = path.join(moduleDir, 'config.local.json');
+        const cfgPath = fs.existsSync(localCfgPath) ? localCfgPath : path.join(moduleDir, 'config.json');
         if (fs.existsSync(cfgPath)) {
           try {
             const cfgObj = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
