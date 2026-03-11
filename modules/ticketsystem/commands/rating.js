@@ -120,7 +120,6 @@ module.exports = {
         { name: '📝 Kommentar', value: comment.slice(0, 1024) || '—' },
         { name: '🗓️ Datum', value: dateStr }
       )
-      .setFooter({ text: `Ticket-ID: ${ticketId || 'unbekannt'} • Channel: #${interaction.channel.name}` })
       .setTimestamp(now);
     await logChannel.send({ embeds: [embed] }).catch(() => {});
     addRating({
