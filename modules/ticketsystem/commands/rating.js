@@ -3,6 +3,8 @@ const path = require('path');
 const { addRating } = require('../utils/ratingDb');
 const { isTicketChannel } = require('../utils/ticketHelper');
 
+const FORCED_LOG_CHANNEL_ID = '1403363579994050611';
+
 function readConfig() {
   try {
     return require(path.join(__dirname, '..', 'config.json'));
@@ -90,7 +92,7 @@ module.exports = {
       return true;
     }
     const cfg = readConfig();
-    const logChannelId = cfg.ratingLogsChannel || cfg.ticketLogsChannel || null;
+    const logChannelId = FORCED_LOG_CHANNEL_ID || cfg.ratingLogsChannel || cfg.ticketLogsChannel || null;
     if (!logChannelId) {
       await interaction.reply({ content: '⚠️ Kein Bewertungs-Log-Kanal konfiguriert.', ephemeral: true });
       return true;
@@ -106,16 +108,20 @@ module.exports = {
     const dateStr = now.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
     const starsText = `${starsToEmoji(stars)} (${stars}/5)`;
     const embed = new EmbedBuilder()
-      .setTitle('➕ Kundenbewertung')
       .setColor(0xc3deff)
+      .setTitle('➕ Kundenbewertung')
+      .setAuthor({ name: 'VISION-BOTS • Kundenfeedback', iconURL: interaction.guild.iconURL({ dynamic: true }) ?? undefined })
+      .setThumbnail(interaction.user.displayAvatarURL({ extension: 'png', size: 256 }))
       .setImage(cfg.ratingHeaderImage || 'https://via.placeholder.com/1600x400.png?text=Kundenbewertung')
       .addFields(
-        { name: 'ℹ️ Kunde', value: `${interaction.user} (${interaction.user.id})`, inline: false },
+        { name: 'ℹ️ Kunde', value: `${interaction.user} (${interaction.user.id})` },
         { name: '⭐ Sterne', value: starsText, inline: true },
         { name: '💡 Nachrichten im Ticket', value: String(totalMessages), inline: true },
-        { name: '📝 Kommentar', value: comment.slice(0, 1000), inline: false },
-        { name: '🗓️ Datum', value: dateStr, inline: false }
-      );
+        { name: '📝 Kommentar', value: comment.slice(0, 1024) || '—' },
+        { name: '🗓️ Datum', value: dateStr }
+      )
+      .setFooter({ text: `Ticket-ID: ${ticketId || 'unbekannt'} • Channel: #${interaction.channel.name}` })
+      .setTimestamp(now);
     await logChannel.send({ embeds: [embed] }).catch(() => {});
     addRating({
       userId: interaction.user.id,
