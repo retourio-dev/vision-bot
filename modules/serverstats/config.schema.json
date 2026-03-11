@@ -1,5 +1,5 @@
 {
-  "required": ["guildId", "channelNames", "updateInterval"],
+  "required": ["guildId", "channelNames"],
   "properties": {
     "guildId": { "type": "string" },
     "channelNames": { "type": "object" },
