@@ -90,7 +90,7 @@ module.exports = {
       return true;
     }
     const cfg = readConfig();
-    const logChannelId = cfg.ratingLogsChannel || null;
+    const logChannelId = cfg.ratingLogsChannel || cfg.ticketLogsChannel || null;
     if (!logChannelId) {
       await interaction.reply({ content: '⚠️ Kein Bewertungs-Log-Kanal konfiguriert.', ephemeral: true });
       return true;

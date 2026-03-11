@@ -28,11 +28,17 @@ module.exports = {
         return interaction.reply({ content: '❌ Mitglied nicht gefunden.', ephemeral: true });
       }
       const roleId = '1403382106565902397';
-      await member.roles.add(roleId).catch(() => {});
+      const role = interaction.guild.roles.cache.get(roleId) || await interaction.guild.roles.fetch(roleId).catch(() => null);
+      if (!role) {
+        return interaction.reply({ content: '⚠️ Rolle „Premium Customer“ existiert nicht oder ist nicht erreichbar.', ephemeral: true });
+      }
+      await member.roles.add(role).catch(() => {
+        throw new Error('Rolle konnte nicht vergeben werden. Prüfe Bot-Berechtigungen und Rollen-Hierarchie.');
+      });
       setCustomer(user.id, 'premium', { addedBy: interaction.user.id });
       return interaction.reply({ content: `✅ ${user} ist nun Premium Customer.`, ephemeral: true });
-    } catch {
-      return interaction.reply({ content: '❌ Fehler beim Ausführen.', ephemeral: true });
+    } catch (e) {
+      return interaction.reply({ content: `❌ Fehler: ${e?.message || 'beim Ausführen'}`, ephemeral: true });
     }
   }
 };
