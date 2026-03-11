@@ -1,0 +1,6 @@
+{
+  "name": "giveaway",
+  "version": "1.0.0",
+  "description": "Giveaway-Verwaltung mit Button-Teilnahme",
+  "configSchema": "./config.schema.json"
+}

@@ -1,0 +1,11 @@
+{
+  "required": ["ticketCategories", "ticketPanel", "ticketClosedCategory"],
+  "properties": {
+    "ticketCategories": { "type": "object" },
+    "ticketPanel": { "type": "object" },
+    "ticketLogsChannel": { "type": "string" },
+    "ticketClosedCategory": { "type": "string" },
+    "messages": { "type": "object" },
+    "botSettings": { "type": "object" }
+  }
+}

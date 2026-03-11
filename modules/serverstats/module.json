@@ -1,0 +1,6 @@
+{
+  "name": "serverstats",
+  "version": "1.0.0",
+  "description": "Serverstatistiken als Voice-Channel-Anzeige",
+  "configSchema": "./config.schema.json"
+}

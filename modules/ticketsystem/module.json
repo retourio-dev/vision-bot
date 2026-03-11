@@ -1,0 +1,6 @@
+{
+  "name": "ticketsystem",
+  "version": "1.0.0",
+  "description": "Ticketverwaltung, Panel und Kunden-Features",
+  "configSchema": "./config.schema.json"
+}

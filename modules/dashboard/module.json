@@ -1,0 +1,6 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "description": "Lieferstatus-Übersicht für Kunden",
+  "configSchema": "./config.schema.json"
+}

@@ -1,0 +1,7 @@
+{
+  "required": [],
+  "properties": {
+    "giveawayChannel": { "type": "string" },
+    "giveawayEmote": { "type": "string" }
+  }
+}

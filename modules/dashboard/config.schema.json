@@ -1,0 +1,15 @@
+{
+  "required": ["channelId", "updateIntervalSec", "statusLevel"],
+  "properties": {
+    "channelId": { "type": "string" },
+    "messageId": { "type": "string" },
+    "updateIntervalSec": { "type": "number" },
+    "statusLevel": { "type": "number" },
+    "etaText": { "type": "string" },
+    "etaByStatus": { "type": "object" },
+    "labels": { "type": "object" },
+    "icons": { "type": "object" },
+    "colors": { "type": "object" },
+    "counts": { "type": "object" }
+  }
+}

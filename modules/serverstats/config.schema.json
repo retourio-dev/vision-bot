@@ -1,0 +1,9 @@
+{
+  "required": ["guildId", "channelNames", "customerRoleId", "updateInterval"],
+  "properties": {
+    "guildId": { "type": "string" },
+    "channelNames": { "type": "object" },
+    "customerRoleId": { "type": "string" },
+    "updateInterval": { "type": "number" }
+  }
+}

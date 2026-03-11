@@ -2,6 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 const { Client, Collection, GatewayIntentBits, Partials, REST, Routes } = require('discord.js');
+const { validateAgainstSchema } = require('./utils/validator');
+const { isLicensed } = require('./utils/license');
 
 const CONFIG_PATH = path.resolve(__dirname, './config.json');
 
@@ -57,7 +59,37 @@ function loadModules() {
     .map(d => d.name);
 
   for (const folder of folders) {
-    const modPath = path.join(modulesDir, folder, 'index.js');
+    const moduleDir = path.join(modulesDir, folder);
+    const manifestPath = path.join(moduleDir, 'module.json');
+    let manifest = null;
+    if (fs.existsSync(manifestPath)) {
+      try { manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch {}
+    }
+    if (!isLicensed(folder, moduleDir, manifest, guildId)) {
+      console.warn(`Modul ${folder} ohne gültige Lizenz — wird übersprungen.`);
+      continue;
+    }
+    if (manifest?.configSchema) {
+      const schemaPath = path.resolve(moduleDir, manifest.configSchema);
+      if (fs.existsSync(schemaPath)) {
+        const cfgPath = path.join(moduleDir, 'config.json');
+        if (fs.existsSync(cfgPath)) {
+          try {
+            const cfgObj = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+            const schemaObj = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+            const res = validateAgainstSchema(cfgObj, schemaObj);
+            if (!res.valid) {
+              console.warn(`Konfigurationsfehler in ${folder}: ${res.errors.join('; ')}`);
+              continue;
+            }
+          } catch (e) {
+            console.warn(`Konfigurationsprüfung in ${folder} fehlgeschlagen:`, e?.message || e);
+            continue;
+          }
+        }
+      }
+    }
+    const modPath = path.join(moduleDir, 'index.js');
     try {
       if (!fs.existsSync(modPath)) {
         console.warn(`Modul ${folder} hat keine index.js — wird übersprungen.`);
