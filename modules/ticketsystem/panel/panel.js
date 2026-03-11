@@ -66,6 +66,8 @@ async function deployPanel(client) {
       } catch {
         console.warn('[ticketsystem] Konnte bestehendes Panel nicht finden, erstelle neues.');
         message = await channel.send({ embeds: [embed], components: [row] });
+        panelConfig.messageId = message.id;
+        fs.writeFileSync(MODULE_CONFIG_PATH, JSON.stringify(config, null, 2));
       }
     } else {
       message = await channel.send({ embeds: [embed], components: [row] });

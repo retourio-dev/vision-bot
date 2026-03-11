@@ -3,6 +3,7 @@ const path = require('path');
 const ticketHelper = require('./utils/ticketHelper');
 const logger = require('./utils/logger');
 const ratingCommand = require('./commands/rating');
+const { Events } = require('discord.js');
 
 const MODULE_CONFIG_PATH = path.join(__dirname, 'config.json');
 
@@ -32,6 +33,37 @@ module.exports = {
       console.log('[ticketsystem] Panel deployed/aktualisiert.');
     } catch (e) {
       console.warn('[ticketsystem] Panel deploy skipped:', e?.message || e);
+    }
+
+    if (!client._ticketsystemPanelWatchRegistered) {
+      client._ticketsystemPanelWatchRegistered = true;
+
+      const redeployIfMatches = async (messageId) => {
+        try {
+          const cfg = loadModuleConfig();
+          const panelCfg = cfg?.ticketPanel;
+          if (!panelCfg?.messageId || !panelCfg?.channelId) return;
+          if (String(panelCfg.messageId) !== String(messageId)) return;
+          const panel = require('./panel/panel');
+          await panel.deployPanel(client);
+        } catch (e) {
+          console.error('[ticketsystem] Fehler beim Wiederherstellen des Panels:', e);
+        }
+      };
+
+      client.on(Events.MessageDelete, async (message) => {
+        await redeployIfMatches(message?.id);
+      });
+
+      client.on(Events.MessageBulkDelete, async (messages) => {
+        try {
+          const cfg = loadModuleConfig();
+          const panelCfg = cfg?.ticketPanel;
+          if (!panelCfg?.messageId) return;
+          if (!messages?.has?.(panelCfg.messageId)) return;
+          await redeployIfMatches(panelCfg.messageId);
+        } catch {}
+      });
     }
 
     console.log('[ticketsystem] initialized');

@@ -20,6 +20,8 @@ const interactionQueue = [];
 let processing = false;
 
 module.exports = (client) => {
+  if (client._verifyModuleRegistered) return;
+  client._verifyModuleRegistered = true;
 
   client.on(Events.GuildMemberAdd, async member => {
     try {
@@ -32,6 +34,24 @@ module.exports = (client) => {
 
   client.once(Events.ClientReady, async () => {
     await sendOrUpdateVerifyEmbed(client);
+  });
+
+  client.on(Events.MessageDelete, async (message) => {
+    try {
+      if (!config?.messageId) return;
+      if (message?.id !== config.messageId) return;
+      await sendOrUpdateVerifyEmbed(client);
+    } catch (e) {
+      console.error('[Verify] Fehler beim Wiederherstellen nach Löschung:', e);
+    }
+  });
+
+  client.on(Events.MessageBulkDelete, async (messages) => {
+    try {
+      if (!config?.messageId) return;
+      if (!messages?.has?.(config.messageId)) return;
+      await sendOrUpdateVerifyEmbed(client);
+    } catch {}
   });
 
   async function sendOrUpdateVerifyEmbed(client) {
