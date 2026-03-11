@@ -14,6 +14,19 @@ function readModuleLicenseKey(moduleName, moduleDir) {
   return null;
 }
 
+function getPublicKey() {
+  if (process.env.LICENSE_PUBLIC_KEY) {
+    return process.env.LICENSE_PUBLIC_KEY.replace(/\\n/g, '\n');
+  }
+  const pkPath = path.resolve(__dirname, './public_key.pem');
+  try {
+    if (fs.existsSync(pkPath)) {
+      return fs.readFileSync(pkPath, 'utf8');
+    }
+  } catch {}
+  return null;
+}
+
 function verifyToken(token, secret, moduleName) {
   if (!token || !secret) return null;
   const parts = token.split('.');
@@ -34,13 +47,52 @@ function verifyToken(token, secret, moduleName) {
   return payload;
 }
 
+function verifyTokenWithPublicKey(token, publicKey, moduleName) {
+  if (!token || !publicKey) return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const payloadB64 = parts[0];
+  const sigB64 = parts[1];
+  let ok = false;
+  try {
+    ok = crypto.verify(
+      'RSA-SHA256',
+      Buffer.from(payloadB64, 'utf8'),
+      publicKey,
+      Buffer.from(sigB64, 'base64')
+    );
+  } catch {
+    return null;
+  }
+  if (!ok) return null;
+  let payload;
+  try {
+    const json = Buffer.from(payloadB64, 'base64').toString('utf8');
+    payload = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  if (payload.name && payload.name !== moduleName) return null;
+  if (payload.exp && Date.now() > Number(payload.exp)) return null;
+  return payload;
+}
+
 function isLicensed(moduleName, moduleDir, manifest, currentGuildId) {
-  const secret = process.env.LICENSE_SECRET;
-  if (!secret) return true;
+  const enforce = String(process.env.LICENSE_ENFORCE || '0') === '1';
   const key = readModuleLicenseKey(moduleName, moduleDir);
-  if (!key) return false;
-  const payload = verifyToken(key, secret, moduleName);
-  if (!payload) return false;
+  const publicKey = getPublicKey();
+  const secret = process.env.LICENSE_SECRET || null;
+
+  let payload = null;
+  if (publicKey) {
+    payload = verifyTokenWithPublicKey(key, publicKey, moduleName);
+  }
+  if (!payload && secret) {
+    payload = verifyToken(key, secret, moduleName);
+  }
+  if (!payload) {
+    return enforce ? false : !publicKey && !secret ? true : false;
+  }
   if (payload.guildId && currentGuildId && String(payload.guildId) !== String(currentGuildId)) {
     return false;
   }
