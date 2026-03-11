@@ -133,6 +133,7 @@ module.exports = (client) => {
       updates.members = { name: localConfig.channelNames.members.replace("{count}", realMemberCount), count: realMemberCount };
 
       for (const [key, roleIds] of Object.entries(roleCounters)) {
+        if (key === "header" || key === "members") continue;
         const template = localConfig.channelNames?.[key];
         if (!template) continue;
         const count = countMembersByCounter(guild, roleIds);
