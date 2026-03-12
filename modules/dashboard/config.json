@@ -1,7 +1,7 @@
 {
   "channelId": "1402913489906827265",
   "messageId": "1405157658280984587",
-  "updateIntervalSec": 300,
+  "updateIntervalSec": 10,
   "statusLevel": 1,
   "allowedroles": [
     "1405125338052165600"
