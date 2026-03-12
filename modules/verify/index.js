@@ -36,22 +36,29 @@ module.exports = (client) => {
     await sendOrUpdateVerifyEmbed(client);
   });
 
-  client.on(Events.MessageDelete, async (message) => {
+  client.on('raw', async (packet) => {
     try {
-      if (!config?.messageId) return;
-      if (message?.id !== config.messageId) return;
+      if (!packet?.t || !packet?.d) return;
+      if (!config?.messageId || !config?.verifyChannelId) return;
+
+      if (packet.t === 'MESSAGE_DELETE') {
+        const deletedId = String(packet.d.id);
+        const deletedChannelId = String(packet.d.channel_id);
+        if (deletedId !== String(config.messageId)) return;
+        if (deletedChannelId !== String(config.verifyChannelId)) return;
+      } else if (packet.t === 'MESSAGE_DELETE_BULK') {
+        const deletedChannelId = String(packet.d.channel_id);
+        if (deletedChannelId !== String(config.verifyChannelId)) return;
+        const ids = Array.isArray(packet.d.ids) ? packet.d.ids.map(String) : [];
+        if (!ids.includes(String(config.messageId))) return;
+      } else {
+        return;
+      }
+
       await sendOrUpdateVerifyEmbed(client);
     } catch (e) {
       console.error('[Verify] Fehler beim Wiederherstellen nach Löschung:', e);
     }
-  });
-
-  client.on(Events.MessageBulkDelete, async (messages) => {
-    try {
-      if (!config?.messageId) return;
-      if (!messages?.has?.(config.messageId)) return;
-      await sendOrUpdateVerifyEmbed(client);
-    } catch {}
   });
 
   async function sendOrUpdateVerifyEmbed(client) {

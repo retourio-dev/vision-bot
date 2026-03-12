@@ -3,7 +3,6 @@ const path = require('path');
 const ticketHelper = require('./utils/ticketHelper');
 const logger = require('./utils/logger');
 const ratingCommand = require('./commands/rating');
-const { Events } = require('discord.js');
 
 const MODULE_CONFIG_PATH = path.join(__dirname, 'config.json');
 
@@ -38,12 +37,13 @@ module.exports = {
     if (!client._ticketsystemPanelWatchRegistered) {
       client._ticketsystemPanelWatchRegistered = true;
 
-      const redeployIfMatches = async (messageId) => {
+      const redeployIfMatches = async (channelId, messageId) => {
         try {
           const cfg = loadModuleConfig();
           const panelCfg = cfg?.ticketPanel;
           if (!panelCfg?.messageId || !panelCfg?.channelId) return;
           if (String(panelCfg.messageId) !== String(messageId)) return;
+          if (String(panelCfg.channelId) !== String(channelId)) return;
           const panel = require('./panel/panel');
           await panel.deployPanel(client);
         } catch (e) {
@@ -51,17 +51,22 @@ module.exports = {
         }
       };
 
-      client.on(Events.MessageDelete, async (message) => {
-        await redeployIfMatches(message?.id);
-      });
-
-      client.on(Events.MessageBulkDelete, async (messages) => {
+      client.on('raw', async (packet) => {
         try {
-          const cfg = loadModuleConfig();
-          const panelCfg = cfg?.ticketPanel;
-          if (!panelCfg?.messageId) return;
-          if (!messages?.has?.(panelCfg.messageId)) return;
-          await redeployIfMatches(panelCfg.messageId);
+          if (!packet?.t || !packet?.d) return;
+          if (packet.t === 'MESSAGE_DELETE') {
+            await redeployIfMatches(packet.d.channel_id, packet.d.id);
+          } else if (packet.t === 'MESSAGE_DELETE_BULK') {
+            const channelId = packet.d.channel_id;
+            const ids = Array.isArray(packet.d.ids) ? packet.d.ids : [];
+            if (ids.length === 0) return;
+            const cfg = loadModuleConfig();
+            const panelCfg = cfg?.ticketPanel;
+            if (!panelCfg?.messageId || !panelCfg?.channelId) return;
+            if (String(panelCfg.channelId) !== String(channelId)) return;
+            if (!ids.map(String).includes(String(panelCfg.messageId))) return;
+            await redeployIfMatches(panelCfg.channelId, panelCfg.messageId);
+          }
         } catch {}
       });
     }
